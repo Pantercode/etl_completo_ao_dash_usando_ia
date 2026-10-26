@@ -48,6 +48,11 @@ app = dash.Dash(__name__, title="Censo Escolar — Painel Público", suppress_ca
 server = app.server
 
 
+@server.route("/saude")
+def saude():
+    return db.diagnostico()
+
+
 def kpi_card(titulo, valor_id):
     return html.Div(
         className="kpi-card",

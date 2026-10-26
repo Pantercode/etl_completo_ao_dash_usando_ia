@@ -39,6 +39,25 @@ def carregar_tabela(nome_tabela: str) -> pd.DataFrame:
     return pd.read_sql(query, get_engine())
 
 
+def diagnostico() -> dict:
+    """Testa a conexão e devolve o resultado sem expor a senha (usado pela rota /saude)."""
+    from sqlalchemy import text
+    from sqlalchemy.engine import make_url
+
+    info = {"SUPABASE_DB_URL_definida": bool(SUPABASE_DB_URL)}
+    try:
+        url = make_url(SUPABASE_DB_URL.strip().replace("postgresql://", "postgresql+psycopg2://", 1))
+        info.update(driver=url.drivername, usuario=url.username, host=url.host, porta=url.port, banco=url.database,
+                    tamanho_senha=len(url.password or ""))
+        with get_engine().connect() as conn:
+            info["anos"] = [r[0] for r in conn.execute(text("select ano_censo from diamond.diamond_resumo_geral"))]
+        info["status"] = "ok"
+    except Exception as erro:
+        info["status"] = "erro"
+        info["erro"] = repr(erro).replace(SUPABASE_DB_URL, "***")[:1000]
+    return info
+
+
 def listar_anos() -> list:
     df = carregar_tabela("diamond_resumo_geral")
     return sorted(df["ano_censo"].unique().tolist())
