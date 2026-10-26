@@ -72,7 +72,8 @@ def grafico_com_insight(titulo, grafico_id, insight_id):
 try:
     ANOS_DISPONIVEIS = db.listar_anos()
     UFS_DISPONIVEIS = db.listar_ufs()
-except Exception:
+except Exception as erro:
+    print(f"[ERRO] Falha ao carregar anos/UFs do Supabase: {erro!r}", flush=True)
     ANOS_DISPONIVEIS, UFS_DISPONIVEIS = [], []
 
 app.layout = html.Div(

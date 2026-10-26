@@ -16,7 +16,9 @@ def get_engine():
     if _engine is None:
         if not SUPABASE_DB_URL:
             raise RuntimeError("SUPABASE_DB_URL não configurada (defina em .env ou nas env vars do Render).")
-        _engine = create_engine(SUPABASE_DB_URL, pool_pre_ping=True)
+        # Força o driver psycopg2: no SQLAlchemy 2.1+ "postgresql://" passou a usar psycopg (v3), que não está instalado.
+        url = SUPABASE_DB_URL.strip().replace("postgresql://", "postgresql+psycopg2://", 1)
+        _engine = create_engine(url, pool_pre_ping=True)
     return _engine
 
 
