@@ -1,0 +1,36 @@
+version: 2
+
+models:
+  - name: diamond_por_idade
+    columns:
+      - name: faixa_etaria
+        tests:
+          - not_null
+      - name: qtd_matriculas
+        tests:
+          - not_null
+
+  - name: diamond_por_escolaridade
+    columns:
+      - name: etapa_ensino
+        tests:
+          - not_null
+
+  - name: diamond_por_localidade
+    columns:
+      - name: uf
+        tests:
+          - not_null
+
+  - name: diamond_serie_temporal
+    columns:
+      - name: ano_censo
+        tests:
+          - not_null
+
+  - name: diamond_resumo_geral
+    columns:
+      - name: ano_censo
+        tests:
+          - not_null
+          - unique

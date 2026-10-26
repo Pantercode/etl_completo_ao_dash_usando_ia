@@ -1,0 +1,15 @@
+# Copie para ~/.dbt/profiles.yml (ou defina DBT_PROFILES_DIR apontando pra essa pasta).
+# Use variáveis de ambiente, nunca a senha direto no arquivo.
+
+censo_escolar:
+  target: dev
+  outputs:
+    dev:
+      type: postgres
+      host: "{{ env_var('SUPABASE_DB_HOST') }}"
+      port: 5432
+      user: "{{ env_var('SUPABASE_DB_USER') }}"
+      password: "{{ env_var('SUPABASE_DB_PASSWORD') }}"
+      dbname: "{{ env_var('SUPABASE_DB_NAME', 'postgres') }}"
+      schema: public
+      threads: 4

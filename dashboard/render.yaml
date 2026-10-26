@@ -1,0 +1,15 @@
+# Infra-as-code do deploy no Render (free tier).
+# No painel do Render: New > Blueprint > conectar este repositório.
+services:
+  - type: web
+    name: censo-escolar-dashboard
+    runtime: docker
+    rootDir: dashboard
+    plan: free
+    envVars:
+      - key: SUPABASE_DB_URL
+        sync: false # defina manualmente no painel do Render (secret)
+      - key: GEMINI_API_KEY
+        sync: false # defina manualmente no painel do Render (secret)
+      - key: GEMINI_MODEL
+        value: gemini-2.5-flash
