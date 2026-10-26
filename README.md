@@ -11,7 +11,7 @@ do dado bruto do INEP a um painel público e gratuito.
 [![Plotly Dash](https://img.shields.io/badge/Plotly-Dash-3F4F75?logo=plotly&logoColor=white)](dashboard/app.py)
 [![Postgres](https://img.shields.io/badge/Supabase-Postgres-3ECF8E?logo=supabase&logoColor=white)](dashboard/db.py)
 [![Gemini](https://img.shields.io/badge/IA-Google%20Gemini-4285F4?logo=googlegemini&logoColor=white)](dashboard/ai)
-[![Deploy](https://img.shields.io/badge/Deploy-Render%20(free)-46E3B7?logo=render&logoColor=white)](dashboard/render.yaml)
+[![Deploy](https://img.shields.io/badge/Deploy-Render%20(free)-46E3B7?logo=render&logoColor=white)](render.yaml)
 [![Fonte](https://img.shields.io/badge/Fonte-INEP-1a1a1a)](https://www.gov.br/inep/pt-br/acesso-a-informacao/dados-abertos/microdados/censo-escolar)
 
 </div>
@@ -122,7 +122,7 @@ python app.py   # http://localhost:8050
 1. Suba o repositório para o GitHub (já configurado para
    `github.com/Pantercode/etl_completo_ao_dash_usando_ia`).
 2. No Render: **New → Blueprint**, aponte para este repositório
-   (`dashboard/render.yaml` já descreve o serviço).
+   (`render.yaml`, na raiz do repositório, já descreve o serviço).
 3. Configure as env vars `SUPABASE_DB_URL` e `GEMINI_API_KEY` como *secrets*
    no painel do Render (nunca comitar no repositório).
 4. Depois do deploy, use [embed/exemplo_embed.html](embed/exemplo_embed.html)
