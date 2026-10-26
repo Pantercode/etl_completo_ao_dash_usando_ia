@@ -14,6 +14,10 @@ do dado bruto do INEP a um painel público e gratuito.
 [![Deploy](https://img.shields.io/badge/Deploy-Render%20(free)-46E3B7?logo=render&logoColor=white)](render.yaml)
 [![Fonte](https://img.shields.io/badge/Fonte-INEP-1a1a1a)](https://www.gov.br/inep/pt-br/acesso-a-informacao/dados-abertos/microdados/censo-escolar)
 
+**🔗 [Acessar o dashboard ao vivo →](https://censo-escolar-dashboard.onrender.com/)**
+
+<sub>Hospedado no plano gratuito do Render: o primeiro acesso pode levar ~1 minuto para "acordar" o servidor.</sub>
+
 </div>
 
 ---
@@ -21,6 +25,8 @@ do dado bruto do INEP a um painel público e gratuito.
 Pipeline de dados completo sobre o **Censo Escolar da Educação Básica (INEP)**
 — terminando num **dashboard público e gratuito**, embedável via `<iframe>`,
 com um chat de **IA generativa** para perguntar sobre os dados em português.
+
+**Dashboard publicado:** <https://censo-escolar-dashboard.onrender.com/>
 
 ## 🗺️ Arquitetura
 
