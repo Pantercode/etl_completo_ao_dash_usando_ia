@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <title>Exemplo de embed — Painel do Censo Escolar</title>
+  <style>
+    body { font-family: system-ui, sans-serif; margin: 0; padding: 24px; background: #f4f3ef; }
+    h1 { font-size: 1.2rem; }
+    .embed-wrapper {
+      width: 100%;
+      max-width: 1200px;
+      margin: 16px auto 0;
+      border-radius: 14px;
+      overflow: hidden;
+      box-shadow: 0 4px 16px rgba(11, 11, 11, 0.08);
+    }
+    iframe {
+      width: 100%;
+      height: 1400px; /* ajuste conforme a altura real do painel */
+      border: none;
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <h1>Exemplo: embedando o painel do Censo Escolar em qualquer página</h1>
+  <p>
+    Troque a URL abaixo pela URL pública do seu serviço no Render
+    (algo como <code>https://censo-escolar-dashboard.onrender.com</code>).
+  </p>
+  <div class="embed-wrapper">
+    <iframe
+      src="https://censo-escolar-dashboard.onrender.com"
+      title="Painel do Censo Escolar"
+      loading="lazy"
+    ></iframe>
+  </div>
+</body>
+</html>
