@@ -22,13 +22,65 @@ do dado bruto do INEP a um painel público e gratuito.
 
 ---
 
-Pipeline de dados completo sobre o **Censo Escolar da Educação Básica (INEP)**
-— terminando num **dashboard público e gratuito**, embedável via `<iframe>`,
-com um chat de **IA generativa** para perguntar sobre os dados em português.
+## 📌 Visão geral do projeto
+
+Este projeto implementa um **pipeline de dados completo** para os microdados do
+**Censo Escolar da Educação Básica (INEP)**, utilizando **PySpark**, **dbt** e
+**PostgreSQL (Supabase)**, e termina num **dashboard público e gratuito**
+publicado no Render, com **IA generativa (Google Gemini)** para explicar os
+dados e responder perguntas em português.
+
+O objetivo é extrair, organizar e disponibilizar os dados em camadas
+estruturadas (**Landing → Bronze → Gold → Diamond**), deixando-os prontos para
+análise e visualização — sem depender de ferramentas de BI pagas, como Power BI
+ou Looker Studio.
 
 **Dashboard publicado:** <https://censo-escolar-dashboard.onrender.com/>
 
-## 🗺️ Arquitetura
+### 🎯 Objetivos do projeto
+
+- **Centralizar e versionar** a extração dos microdados públicos de educação do INEP.
+- **Organizar os dados em camadas** de uma arquitetura moderna (medalhão), para análises eficientes.
+- **Processar volume grande localmente** com PySpark (~217 mil escolas por ano) e levar para a nuvem só o dado agregado.
+- **Automatizar a modelagem e os testes** dos dados com dbt (staging → intermediate → diamond).
+- **Garantir reprodutibilidade**: scripts numerados, `Makefile`, `render.yaml` (infra como código) e Dockerfile do dashboard.
+- **Criar uma base confiável** para indicadores de idade, etapa de ensino, localidade (urbana/rural) e rede (pública/privada).
+- **Democratizar o acesso**: painel aberto, sem login, embedável via `<iframe>` e com chat de IA em linguagem natural.
+
+### 🧱 Arquitetura da solução (resumo)
+
+```text
+Microdados INEP (zip/CSV)
+   │
+   ▼
+PySpark (local)
+   ├── 01_download_landing.py   → Landing  (arquivo bruto, como baixado)
+   ├── 02_landing_to_bronze.py  → Bronze   (Parquet tipado, encoding corrigido)
+   ├── 03_bronze_to_gold.py     → Gold     (agregado por ano × UF × município × rede)
+   └── 04_load_gold_to_postgres → Supabase Postgres (schema staging)
+                                     │
+                                     ▼
+                         dbt run / dbt test → Diamond (marts por gráfico)
+                                     │
+                                     ▼
+              Dashboard Plotly Dash (Docker, Render)  ⇄  Google Gemini
+                                     │
+                                     ▼
+                       Público na web / <iframe> em qualquer site
+```
+
+### 🧩 Componentes principais
+
+| Componente | Papel no projeto |
+|---|---|
+| **Pipeline PySpark** | Baixa os microdados do INEP, converte CSV `;`/latin1 em Parquet tipado e agrega as colunas `QT_MAT_*` por município e rede. |
+| **dbt (dbt-postgres)** | Materializa as camadas staging → intermediate → diamond no Postgres e executa os testes de qualidade (`not_null`, `accepted_values`, etc.). |
+| **Supabase (PostgreSQL)** | Banco de destino na nuvem (free tier), acessado pelo dashboard via *Session pooler*. |
+| **Plotly Dash** | Dashboard público: indicadores, gráficos interativos (clique no estado para filtrar), tabelas acessíveis e chat. |
+| **Google Gemini** | Gera a "leitura" automática de cada gráfico e converte perguntas em português em SQL somente leitura (text-to-SQL). |
+| **Docker + Render** | Empacota o dashboard e publica gratuitamente via Blueprint (`render.yaml`), com deploy automático a cada `git push`. |
+
+## 🗺️ Arquitetura detalhada
 
 ```mermaid
 flowchart LR
@@ -147,6 +199,8 @@ python app.py   # http://localhost:8050
 - Os microdados consolidados (desde 2019) não trazem mais flags de
   transporte escolar/necessidade especial por aluno — esses indicadores
   (presentes nos microdados antigos, pré-2019) não entraram neste painel.
+- No momento, apenas o ano de **2023** está carregado no banco publicado; o
+  gráfico de evolução aparece automaticamente quando houver mais de um ano.
 - Os nomes de coluna foram validados contra o arquivo real de 2023; confira
   rapidamente o cabeçalho de 2019-2022 antes de rodar (ver
   `etl/schema_mappings/colunas_por_ano.py`).
