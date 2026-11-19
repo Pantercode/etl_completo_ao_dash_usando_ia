@@ -72,9 +72,9 @@ Se aparecer `OK` sem erro, o ambiente está pronto.
 ## 6. dbt
 
 ```powershell
-pip install dbt-core dbt-postgres
+pip install dbt-core dbt-duckdb
 cd dbt\censo_escolar
-dbt debug   # confirma a conexão com o Supabase (configure profiles.yml antes, ver dbt/censo_escolar/profiles.yml.example)
+dbt debug --profiles-dir .   # confirma o acesso ao DuckDB (copie profiles.yml.example para profiles.yml antes)
 ```
 
 ## Troubleshooting (erros reais encontrados ao validar este guia)

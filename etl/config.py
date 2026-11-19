@@ -48,6 +48,6 @@ REGIOES_MATRICULA = ["CO", "NORDESTE", "NORTE", "SUDESTE", "SUL"]
 
 TABELAS_SIMPLES = ["ESCOLAS", "TURMAS", "DOCENTES"]
 
-# --- Conexão com o Postgres/Supabase (camada gold) ---
-SUPABASE_DB_URL = os.environ.get("SUPABASE_DB_URL", "")
+# --- DuckDB (camadas staging/diamond, lidas pelo dashboard) ---
+DUCKDB_PATH = Path(os.environ.get("DUCKDB_PATH", PROJECT_ROOT / "dashboard" / "dados" / "censo.duckdb"))
 STAGING_SCHEMA = "staging"

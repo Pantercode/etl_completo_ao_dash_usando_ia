@@ -7,9 +7,9 @@ do dado bruto do INEP a um painel público e gratuito.
 
 [![Python](https://img.shields.io/badge/Python-3.11%2B-3776AB?logo=python&logoColor=white)](etl/requirements.txt)
 [![PySpark](https://img.shields.io/badge/PySpark-4.x-E25A1C?logo=apachespark&logoColor=white)](etl/requirements.txt)
-[![dbt](https://img.shields.io/badge/dbt-postgres-FF694B?logo=dbt&logoColor=white)](dbt/censo_escolar)
+[![dbt](https://img.shields.io/badge/dbt-duckdb-FF694B?logo=dbt&logoColor=white)](dbt/censo_escolar)
 [![Plotly Dash](https://img.shields.io/badge/Plotly-Dash-3F4F75?logo=plotly&logoColor=white)](dashboard/app.py)
-[![Postgres](https://img.shields.io/badge/Supabase-Postgres-3ECF8E?logo=supabase&logoColor=white)](dashboard/db.py)
+[![DuckDB](https://img.shields.io/badge/DuckDB-arquivo%20local-FFF000?logo=duckdb&logoColor=black)](dashboard/db.py)
 [![Gemini](https://img.shields.io/badge/IA-Google%20Gemini-4285F4?logo=googlegemini&logoColor=white)](dashboard/ai)
 [![Deploy](https://img.shields.io/badge/Deploy-Render%20(free)-46E3B7?logo=render&logoColor=white)](render.yaml)
 [![Fonte](https://img.shields.io/badge/Fonte-INEP-1a1a1a)](https://www.gov.br/inep/pt-br/acesso-a-informacao/dados-abertos/microdados/censo-escolar)
@@ -26,7 +26,7 @@ do dado bruto do INEP a um painel público e gratuito.
 
 Este projeto implementa um **pipeline de dados completo** para os microdados do
 **Censo Escolar da Educação Básica (INEP)**, utilizando **PySpark**, **dbt** e
-**PostgreSQL (Supabase)**, e termina num **dashboard público e gratuito**
+**DuckDB**, e termina num **dashboard público e gratuito**
 publicado no Render, com **IA generativa (Google Gemini)** para explicar os
 dados e responder perguntas em português.
 
@@ -41,7 +41,7 @@ ou Looker Studio.
 
 - **Centralizar e versionar** a extração dos microdados públicos de educação do INEP.
 - **Organizar os dados em camadas** de uma arquitetura moderna (medalhão), para análises eficientes.
-- **Processar volume grande localmente** com PySpark (~217 mil escolas por ano) e levar para a nuvem só o dado agregado.
+- **Processar volume grande localmente** com PySpark (~217 mil escolas por ano) e guardar só o dado agregado (um arquivo DuckDB de ~2 MB).
 - **Automatizar a modelagem e os testes** dos dados com dbt (staging → intermediate → diamond).
 - **Garantir reprodutibilidade**: scripts numerados, `Makefile`, `render.yaml` (infra como código) e Dockerfile do dashboard.
 - **Criar uma base confiável** para indicadores de idade, etapa de ensino, localidade (urbana/rural) e rede (pública/privada).
@@ -57,7 +57,7 @@ PySpark (local)
    ├── 01_download_landing.py   → Landing  (arquivo bruto, como baixado)
    ├── 02_landing_to_bronze.py  → Bronze   (Parquet tipado, encoding corrigido)
    ├── 03_bronze_to_gold.py     → Gold     (agregado por ano × UF × município × rede)
-   └── 04_load_gold_to_postgres → Supabase Postgres (schema staging)
+   └── 04_load_gold_to_duckdb   → DuckDB (dashboard/dados/censo.duckdb, schema staging)
                                      │
                                      ▼
                          dbt run / dbt test → Diamond (marts por gráfico)
@@ -74,10 +74,10 @@ PySpark (local)
 | Componente | Papel no projeto |
 |---|---|
 | **Pipeline PySpark** | Baixa os microdados do INEP, converte CSV `;`/latin1 em Parquet tipado e agrega as colunas `QT_MAT_*` por município e rede. |
-| **dbt (dbt-postgres)** | Materializa as camadas staging → intermediate → diamond no Postgres e executa os testes de qualidade (`not_null`, `accepted_values`, etc.). |
-| **Supabase (PostgreSQL)** | Banco de destino na nuvem (free tier), acessado pelo dashboard via *Session pooler*. |
-| **Plotly Dash** | Dashboard público: indicadores, gráficos interativos (clique no estado para filtrar), tabelas acessíveis e chat. |
-| **Google Gemini** | Gera a "leitura" automática de cada gráfico e converte perguntas em português em SQL somente leitura (text-to-SQL). |
+| **dbt (dbt-duckdb)** | Materializa as camadas staging → intermediate → diamond no DuckDB e executa os testes de qualidade (`not_null`, `accepted_values`, etc.). |
+| **DuckDB** | Banco analítico em arquivo (`dashboard/dados/censo.duckdb`), versionado e embarcado na imagem do dashboard: sem servidor, sem custo e sem pausa por inatividade. O dashboard abre o arquivo somente leitura e sem acesso a arquivos/rede (sandbox para o SQL gerado pela IA). |
+| **Plotly Dash** | Dashboard público: KPIs com comparação (ano anterior ou média do Brasil), gráficos interativos (clique no estado para filtrar), tabelas acessíveis e chat. |
+| **Google Gemini** | Escreve o resumo e a leitura de cada gráfico (1 chamada por filtro, a partir de fatos já calculados pelo Python) e converte perguntas em português em SQL somente leitura (text-to-SQL com autocorreção). |
 | **Docker + Render** | Empacota o dashboard e publica gratuitamente via Blueprint (`render.yaml`), com deploy automático a cada `git push`. |
 
 ## 🗺️ Arquitetura detalhada
@@ -96,8 +96,8 @@ flowchart LR
         BRONZE -->|"03_bronze_to_gold.py"| GOLD
     end
 
-    subgraph nuvem["☁️ Nuvem gratuita"]
-        STAGING["Supabase Postgres\nschema staging\n(04_load_gold_to_postgres.py)"]
+    subgraph nuvem["☁️ DuckDB + nuvem gratuita"]
+        STAGING["DuckDB (arquivo)\nschema staging\n(04_load_gold_to_duckdb.py)"]
         DIAMOND["💎 dbt — schema diamond\nmarts por gráfico:\nidade · escolaridade\nlocalidade · série temporal"]
         DASH["📊 Dashboard Plotly Dash\n(Render, free tier)"]
         GEMINI["✨ Google Gemini\nchat + insights automáticos"]
@@ -106,7 +106,7 @@ flowchart LR
     EMBED["🌐 &lt;iframe&gt; em qualquer site"]
 
     INEP --> LANDING
-    GOLD -->|"04_load_gold_to_postgres.py"| STAGING
+    GOLD -->|"04_load_gold_to_duckdb.py"| STAGING
     STAGING -->|"dbt run"| DIAMOND
     DIAMOND --> DASH
     GEMINI <--> DASH
@@ -120,18 +120,18 @@ flowchart LR
 | 🧊 **Landing** | Zip/CSV do INEP, exatamente como baixado | Disco local (`data/landing/`) |
 | 🥉 **Bronze** | CSV `;`/latin1 → Parquet tipado, sem lógica de negócio | Disco local (`data/bronze/`) |
 | 🥇 **Gold** | Deriva `rede`, soma as colunas `QT_MAT_*` por município | Disco local (`data/gold/`) |
-| 💎 **Diamond** | Marts finais, um por gráfico do dashboard | Supabase Postgres (via dbt) |
+| 💎 **Diamond** | Marts finais, um por gráfico do dashboard | DuckDB `dashboard/dados/censo.duckdb` (via dbt) |
 | 📊 **Dashboard** | Gráficos + KPIs + chat de IA, público e gratuito | Render (Docker, free tier) |
 
-### Por que agregar antes do Postgres?
+### Por que agregar antes de carregar?
 
 Desde 2019 o INEP já publica os microdados em nível de **escola** (não mais
 por aluno) — cada escola tem colunas `QT_MAT_*` com a contagem de matrículas
 já pré-agregada por idade, etapa de ensino, zona urbana/rural, sexo e
 raça/cor. Ainda assim, isso é ~217 mil linhas (uma por escola) por ano — o
 PySpark soma essas colunas por **ano x UF x município x rede**, reduzindo
-para algumas dezenas de milhares de linhas, pequeno o suficiente para o free
-tier do Supabase (500MB). Os marts `diamond_*` no dbt "despivotam" essas
+para alguns milhares de linhas — o arquivo DuckDB final tem ~2 MB e vai
+junto com o dashboard no repositório. Os marts `diamond_*` no dbt "despivotam" essas
 colunas somadas em formato longo (uma linha por faixa etária/etapa/zona),
 pronto para os gráficos do dashboard.
 
@@ -154,15 +154,15 @@ docs/SETUP_AMBIENTE.md    → guia de instalação (Java, PySpark, winutils, dbt
 Ver [docs/SETUP_AMBIENTE.md](docs/SETUP_AMBIENTE.md) primeiro (Java, winutils, dbt).
 
 ```bash
-cp .env.example .env   # preencha SUPABASE_DB_URL e GEMINI_API_KEY
+cp .env.example .env   # preencha GEMINI_API_KEY
 
 pip install -r etl/requirements.txt
 make landing   # baixa os microdados do INEP (vários GB, pode demorar)
 make bronze    # PySpark: csv -> parquet tipado
 make gold      # PySpark: join + agregação (saída pequena)
-make load      # carrega o gold agregado no Supabase (schema staging)
+make load      # carrega o gold agregado no DuckDB (dashboard/dados/censo.duckdb)
 
-pip install dbt-core dbt-postgres
+cp dbt/censo_escolar/profiles.yml.example dbt/censo_escolar/profiles.yml
 make dbt-run   # constrói os marts diamond_*
 make dbt-test  # valida os dados (not_null, accepted_values, etc.)
 ```
@@ -181,8 +181,9 @@ python app.py   # http://localhost:8050
    `github.com/Pantercode/etl_completo_ao_dash_usando_ia`).
 2. No Render: **New → Blueprint**, aponte para este repositório
    (`render.yaml`, na raiz do repositório, já descreve o serviço).
-3. Configure as env vars `SUPABASE_DB_URL` e `GEMINI_API_KEY` como *secrets*
-   no painel do Render (nunca comitar no repositório).
+3. Configure a env var `GEMINI_API_KEY` como *secret* no painel do Render
+   (nunca comitar no repositório). Os dados vão dentro da imagem
+   (`dashboard/dados/censo.duckdb`): para atualizar, rode o pipeline e faça commit do arquivo.
 4. Depois do deploy, use [embed/exemplo_embed.html](embed/exemplo_embed.html)
    como modelo para embedar o painel em qualquer página — o dashboard fica
    público, sem login, qualquer pessoa com o link acessa.

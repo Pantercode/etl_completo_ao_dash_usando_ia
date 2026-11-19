@@ -6,7 +6,7 @@ raça e zona urbana/rural) — não existe mais um arquivo de matrícula por
 aluno. Este passo só seleciona as colunas QT_MAT_* relevantes, deriva
 `rede` (a partir de TP_DEPENDENCIA) e agrega (SUM) por
 (ano, uf, município, rede), que já reduz ~217 mil linhas (uma por escola)
-para algumas dezenas de milhares — pequeno o suficiente para o Supabase.
+para algumas dezenas de milhares — pequeno o suficiente para um arquivo DuckDB versionado.
 
 IMPORTANTE: QT_MAT_ESP (educação especial) pode se sobrepor com as outras
 etapas (um aluno de educação especial também é contado na etapa regular que

@@ -1,15 +1,12 @@
-# Copie para ~/.dbt/profiles.yml (ou defina DBT_PROFILES_DIR apontando pra essa pasta).
-# Use variáveis de ambiente, nunca a senha direto no arquivo.
+# Copie para profiles.yml nesta pasta (ou ~/.dbt/profiles.yml).
+# O dbt-duckdb grava as tabelas diamond.* no mesmo arquivo que o dashboard lê.
+# Rode de dentro de dbt/censo_escolar:  dbt run --profiles-dir .
 
 censo_escolar:
   target: dev
   outputs:
     dev:
-      type: postgres
-      host: "{{ env_var('SUPABASE_DB_HOST') }}"
-      port: 5432
-      user: "{{ env_var('SUPABASE_DB_USER') }}"
-      password: "{{ env_var('SUPABASE_DB_PASSWORD') }}"
-      dbname: "{{ env_var('SUPABASE_DB_NAME', 'postgres') }}"
-      schema: public
+      type: duckdb
+      path: "{{ env_var('DUCKDB_PATH', '../../dashboard/dados/censo.duckdb') }}"
+      schema: main
       threads: 4

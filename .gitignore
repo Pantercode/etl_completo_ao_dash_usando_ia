@@ -23,6 +23,10 @@ dbt/censo_escolar/dbt_packages/
 dbt/censo_escolar/logs/
 dbt/censo_escolar/profiles.yml
 
+# DuckDB (o censo.duckdb do dashboard é versionado; arquivos temporários não)
+*.duckdb.wal
+*.duckdb.tmp/
+
 # Spark
 spark-warehouse/
 metastore_db/
@@ -31,3 +35,4 @@ derby.log
 # OS / editor
 .DS_Store
 Thumbs.db
+dbt/censo_escolar/.user.yml

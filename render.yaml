@@ -7,10 +7,8 @@ services:
     rootDir: dashboard
     plan: free
     envVars:
-      - key: SUPABASE_DB_URL
-        sync: false # defina manualmente no painel do Render (secret)
       - key: GEMINI_API_KEY
         sync: false # defina manualmente no painel do Render (secret)
       - key: GEMINI_MODEL
-        value: gemini-flash-lite-latest
+        value: gemini-3.5-flash-lite
 #
